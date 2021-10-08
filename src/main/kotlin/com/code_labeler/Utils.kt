@@ -13,7 +13,6 @@ class CodeWithLabel(val code: String, val label: Label) {
 
 fun parseCsvFile(file: File): List<CodeWithLabel> {
     val map = csvReader().readAllWithHeader(file)
-
     return map.map { CodeWithLabel(it.getOrDefault("code", ""), Label(name = it.getOrDefault("value", ""))) }
 }
 
