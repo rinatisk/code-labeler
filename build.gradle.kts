@@ -24,6 +24,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
 }
 
 detekt {

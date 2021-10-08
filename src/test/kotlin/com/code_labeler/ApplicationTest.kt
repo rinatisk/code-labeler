@@ -10,4 +10,5 @@ import io.ktor.server.testing.*
 import com.code_labeler.plugins.*
 
 class ApplicationTest {
+
 }
