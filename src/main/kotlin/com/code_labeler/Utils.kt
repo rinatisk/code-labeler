@@ -2,11 +2,8 @@ package com.code_labeler
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import kotlinx.serialization.SerialName
 import java.io.File
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
 
 @Serializable
 open class Label(val name: String) {
@@ -14,12 +11,22 @@ open class Label(val name: String) {
 }
 
 @Serializable
-class CodeWithLabel(val code: String, var label: Label) {
+class CodeWithLabel(val code: String) {
+    private var _label = Label("")
+    val label: Label
+        get() = _label
+
+    constructor(code: String, label: Label) : this(code) {
+        _label = label
+    }
+
+    fun changeLabel(newLabel: Label) {
+        _label = newLabel
+    }
 }
 
 @Serializable
-class NewLabel(val numberOfSnippet: Int, val label: Label) {
-}
+class NewLabel(val numberOfSnippet: Int, val label: Label)
 
 fun parseCsvString(string: String): List<CodeWithLabel> {
     val map = csvReader().readAllWithHeader(string)

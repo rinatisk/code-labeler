@@ -5,7 +5,6 @@ import io.ktor.server.tomcat.*
 import com.code_labeler.plugins.*
 import io.ktor.application.*
 import io.ktor.features.*
-import io.ktor.http.*
 import io.ktor.serialization.*
 
 fun main() {

@@ -48,7 +48,7 @@ fun Application.configureRouting() {
             call.respondText("file uploaded successfully to files/$uuid")
         }
 
-        get("/download/{id}") {
+        get("/files/{id}") {
             val id = call.parameters["id"]
             val file = File("files/$id")
             val temporaryFile = File("temporaryFiles/$id.csv")
@@ -74,10 +74,9 @@ fun Application.configureRouting() {
             val newLabel = call.receive<NewLabel>()
             val file = File("files/$id")
             val list: List<CodeWithLabel> = Json.decodeFromString(file.readText())
-            list[newLabel.numberOfSnippet].label = newLabel.label
+            list[newLabel.numberOfSnippet].changeLabel(newLabel.label)
             file.writeText(Json.encodeToString(list))
             call.respond(HttpStatusCode.OK, "OK")
         }
     }
-
 }
