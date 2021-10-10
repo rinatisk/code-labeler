@@ -11,7 +11,7 @@ class JwtConfig(jwtSecret: String) {
     companion object Constants {
         // jwt config
         private const val jwtIssuer = "donothing.club"
-        private const val jwtRealm = "donothing.club.todolist"
+        private const val jwtRealm = "donothing.club.codelabeler"
 
         // claims
         private const val CLAIM_USERID = "userId"
