@@ -26,7 +26,8 @@ internal class UtilsKtTest {
         )
         marshalCsvFile(list, tempResource)
         val expectedFile = this.javaClass.getResource("marshalTest/expectedFile2.csv")
-        assertEquals(expectedFile.readText().replace("\r", ""), tempResource.readText().replace("\r", ""))
+       //  assertEquals(expectedFile.readText().replace("\r", ""), tempResource.readText().replace("\r", ""))
+        assertEquals(expectedFile.readText(), tempResource.readText())
     }
 
     @Test
