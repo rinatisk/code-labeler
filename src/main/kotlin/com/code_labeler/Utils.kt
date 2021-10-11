@@ -8,8 +8,7 @@ open class Label(val name: String) {
     override fun toString() = name
 }
 
-class CodeWithLabel(val code: String, val label: Label) {
-}
+class CodeWithLabel(val code: String, val label: Label)
 
 fun parseCsvFile(file: File): List<CodeWithLabel> {
     val map = csvReader().readAllWithHeader(file)
