@@ -1,5 +1,7 @@
 package com.code_labeler.repository
 
+@SuppressWarnings("MagicNumber")
+
 class InMemoryUserRepository : UserRepository {
     private val credentialsToUsers = mapOf<String, UserRepository.User>(
         "admin:admin" to UserRepository.User(1, "admin"),
