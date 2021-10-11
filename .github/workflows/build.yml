@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Configure git
-        run: git config --global core.autocrlf input
+        run: git config --global core.autocrlf true
 
       - name: Run build
         run: ./gradlew build
@@ -40,10 +40,10 @@ jobs:
         run: git config --global core.autocrlf true
 
       - name: Run build
-        run: ./gradlew build
+        run: .\gradlew.bat build
 
       - name: Run tests
-        run: ./gradlew test
+        run: .\gradlew.bat test
 
       - name: Run detekt
-        run: ./gradlew detekt
+        run: .\gradlew.bat detekt
