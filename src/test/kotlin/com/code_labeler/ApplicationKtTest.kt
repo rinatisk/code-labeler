@@ -10,7 +10,7 @@ internal class ApplicationKtTest {
         val file = this.javaClass.getResource("simple_file.csv").file
         val actual = parseCsvFile(File(file))
 
-        assertEquals("", actual.first().code)
+        assertEquals("example1 { }", actual.first().code)
     }
 
 }
