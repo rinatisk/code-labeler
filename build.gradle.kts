@@ -35,6 +35,7 @@ dependencies {
 }
 
 detekt {
-    buildUponDefaultConfig = true
-    ignoreFailures = true
+    allRules = true
+    detekt.buildUponDefaultConfig = true
+    config = files("./config/detekt/detekt.yml")
 }

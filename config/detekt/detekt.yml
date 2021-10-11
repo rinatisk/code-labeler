@@ -1,0 +1,7 @@
+naming:
+  PackageNaming:
+    active: false
+
+style:
+  WildcardImport:
+    active: false
