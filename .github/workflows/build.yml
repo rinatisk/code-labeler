@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Configure git
+        run: git config --global core.autocrlf false
+
       - name: Run build
         run: ./gradlew build
 
@@ -20,6 +23,8 @@ jobs:
 
       - name: Run detekt
         run: ./gradlew detekt
+
+
   build-on-windows:
     runs-on: windows-latest
 
@@ -30,6 +35,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+
+      - name: Configure git
+        run: git config --global core.autocrlf true
 
       - name: Run build
         run: ./gradlew build
