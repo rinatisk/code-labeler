@@ -15,10 +15,9 @@ import java.util.UUID
 fun Application.configureRouting() {
     routing {
         var fileDescription = ""
-        val uuid = UUID.randomUUID().toString()
         post("/upload") {
             val multipartData = call.receiveMultipart()
-
+            val uuid = UUID.randomUUID().toString()
             multipartData.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
