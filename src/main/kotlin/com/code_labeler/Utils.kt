@@ -34,16 +34,16 @@ class NewLabel(val numberOfSnippet: Int, val label: Label)
 
 fun parseCsvString(string: String): List<CodeWithLabel> {
     val map = csvReader().readAllWithHeader(string)
-    return map.map { CodeWithLabel(it.getOrDefault("code", ""), Label(name = it.getOrDefault("value", ""))) }
+    return map.map { CodeWithLabel(it.getOrDefault("code", ""), Label(name = it.getOrDefault("label", ""))) }
 }
 
 fun parseCsvFile(file: File): List<CodeWithLabel> {
     val map = csvReader().readAllWithHeader(file)
-    return map.map { CodeWithLabel(it.getOrDefault("code", ""), Label(name = it.getOrDefault("value", ""))) }
+    return map.map { CodeWithLabel(it.getOrDefault("code", ""), Label(name = it.getOrDefault("label", ""))) }
 }
 
 fun marshalCsvFile(listOfSnippets: List<CodeWithLabel>, file: File) {
-    val title = listOf(listOf("code", "labels"))
+    val title = listOf(listOf("code", "label"))
     val rows = listOfSnippets.map { listOf(it.code, it.label.toString()) }
     val fullList = title + rows
     csvWriter().writeAll(fullList, file)
