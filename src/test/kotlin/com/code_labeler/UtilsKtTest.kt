@@ -14,7 +14,7 @@ internal class UtilsKtTest {
         val list = listOf(CodeWithLabel("ada", Label("daad")), CodeWithLabel("d", Label("dd")))
         marshalCsvFile(list, tempResource)
         val expectedFile = this.javaClass.getResource("marshalTest/expectedFile1.csv")
-        assertEquals(expectedFile.readText(), tempResource.readText());
+        assertEquals(expectedFile.readText().replace("\r", ""), tempResource.readText().replace("\r", ""));
     }
 
     @Test
@@ -26,7 +26,7 @@ internal class UtilsKtTest {
         )
         marshalCsvFile(list, tempResource)
         val expectedFile = this.javaClass.getResource("marshalTest/expectedFile2.csv")
-        assertEquals(expectedFile.readText(), tempResource.readText())
+        assertEquals(expectedFile.readText().replace("\r", ""), tempResource.readText().replace("\r", ""))
     }
 
     @Test
