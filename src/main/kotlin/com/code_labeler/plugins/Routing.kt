@@ -10,14 +10,13 @@ import io.ktor.routing.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import java.io.File
-import java.util.UUID
 
 fun Application.configureRouting() {
     routing {
         var fileDescription = ""
+        val newFile = createFile()
         post("/upload") {
             val multipartData = call.receiveMultipart()
-            val uuid = UUID.randomUUID().toString()
             multipartData.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
@@ -25,11 +24,11 @@ fun Application.configureRouting() {
                     }
                     is PartData.FileItem -> {
                         val string = Json.encodeToString(parseCsvString(String(part.streamProvider().readBytes())))
-                        File("files/$uuid").writeText(string)
+                        addFile(newFile, string)
                     }
                 }
             }
-            call.respondText("file uploaded successfully to files/$uuid")
+            call.respondText("file uploaded successfully to files/${newFile.uuid}")
         }
 
         get("/files/{id}") {
