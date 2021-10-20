@@ -1,3 +1,5 @@
+@file:Suppress("SwallowedException", "LongMethod")
+
 package com.code_labeler.plugins
 
 import com.code_labeler.*
@@ -10,11 +12,13 @@ import io.ktor.routing.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import java.io.File
+import java.util.*
+import aws.sdk.kotlin.services.s3.model.NoSuchKey
 
 fun Application.configureRouting() {
     routing {
         var fileDescription = ""
-        val newFile = createFile()
+        var uuid = ""
         post("/upload") {
             val multipartData = call.receiveMultipart()
             multipartData.forEachPart { part ->
@@ -24,26 +28,36 @@ fun Application.configureRouting() {
                     }
                     is PartData.FileItem -> {
                         val string = Json.encodeToString(parseCsvString(String(part.streamProvider().readBytes())))
-                        addFile(newFile, string)
+                        uuid = UUID.randomUUID().toString()
+                        CloudStorage.uploadJson(uuid, JsonFile(string, part.originalFileName ?: "file"))
                     }
                 }
             }
-            call.respondText("file uploaded successfully to files/${newFile.uuid}")
+            call.respondText("file uploaded successfully to files/$uuid")
         }
 
         get("/files/{id}") {
             val id = call.parameters["id"]
-            val file = File("files/$id")
-            if (file.exists()) {
-                val temporaryFile = File("temporaryFiles/$id.csv")
-                getCsvFromJson(file, temporaryFile)
-                call.response.header(
-                    HttpHeaders.ContentDisposition,
-                    ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, "$id.csv")
-                        .toString()
-                )
-                call.respondFile(temporaryFile)
-                temporaryFile.delete()
+            if (id != null) {
+                try {
+                    val jsonFile = CloudStorage.downloadJson(id)
+                    val temporaryFile = File("temporaryFiles/${jsonFile.originalName}.csv")
+                    val listOfSnippets: List<CodeWithLabel> = Json.decodeFromString(jsonFile.jsonString)
+                    marshalCsvFile(listOfSnippets, temporaryFile)
+                    call.response.header(
+                        HttpHeaders.ContentDisposition,
+                        ContentDisposition.Attachment.withParameter(
+                            ContentDisposition.Parameters.FileName,
+                            "${jsonFile.originalName}.csv"
+                        )
+                            .toString()
+                    )
+                    call.respondFile(temporaryFile)
+                    temporaryFile.delete()
+                } catch (e: NoSuchKey) {
+                    // maybe another exception is needed here
+                    call.respond(HttpStatusCode.NotFound, "Such file does not exist")
+                }
             } else {
                 call.respond(HttpStatusCode.NotFound, "Such file does not exist")
             }
@@ -51,9 +65,8 @@ fun Application.configureRouting() {
 
         delete("files/{id}") {
             val id = call.parameters["id"]
-            val fileToDelete = File("files/$id")
-            if (fileToDelete.exists()) {
-                fileToDelete.delete()
+            if (id != null) {
+                CloudStorage.deleteFile(id)
                 call.respond(HttpStatusCode.OK, "OK")
             } else {
                 call.respond(HttpStatusCode.NotFound, "Such file does not exist")
@@ -64,10 +77,16 @@ fun Application.configureRouting() {
             val id = call.parameters["id"]
             // Normal responses need to be added here
             val newLabel = call.receive<NewLabel>()
-            val file = File("files/$id")
-            if (file.exists()) {
-                changeLabel(file, newLabel)
-                call.respond(HttpStatusCode.OK, "OK")
+            if (id != null) {
+                try {
+
+                    val jsonFile = CloudStorage.downloadJson(id)
+                    jsonFile.changeString(changeLabel(jsonFile.jsonString, newLabel))
+                    CloudStorage.uploadJson(id, jsonFile)
+                    call.respond(HttpStatusCode.OK, "OK")
+                } catch (e: NoSuchKey) {
+                    call.respond(HttpStatusCode.NotFound, "Such file does not exist")
+                }
             } else {
                 call.respond(HttpStatusCode.NotFound, "Such file does not exist")
             }
