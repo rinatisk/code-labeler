@@ -5,6 +5,7 @@ import aws.sdk.kotlin.runtime.auth.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.content.decodeToString
 
 object CloudStorage {
     private val awsCreds = Credentials(
@@ -38,7 +39,7 @@ object CloudStorage {
         var jsonString = ""
         s3Client.getObject(getObjectRequest) { getObjectResponse ->
             originalName = getObjectResponse.metadata?.get("original-name") ?: ""
-            jsonString = getObjectResponse.body?.toString() ?: ""
+            jsonString = getObjectResponse.body?.decodeToString() ?: ""
         }
         return JsonFile(jsonString, originalName)
     }
