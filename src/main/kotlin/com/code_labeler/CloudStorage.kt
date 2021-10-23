@@ -18,30 +18,25 @@ object CloudStorage {
     }
     private val bucketName = "code-labeler-bucket"
 
-    suspend fun uploadJson(id: String, jsonFile: JsonFile) {
-        val newObjectMetadata = mutableMapOf<String, String>()
-        newObjectMetadata["original-name"] = jsonFile.originalName
-        val byteStreamOfFile = ByteStream.fromBytes(jsonFile.jsonString.toByteArray())
+    suspend fun uploadJson(id: String, jsonString: String) {
+        val byteStreamOfFile = ByteStream.fromBytes(jsonString.toByteArray())
         s3Client.putObject {
             bucket = bucketName
             key = id
-            metadata = newObjectMetadata
             body = byteStreamOfFile
         }
     }
 
-    suspend fun downloadJson(id: String): JsonFile {
+    suspend fun downloadJson(id: String): String {
         val getObjectRequest = GetObjectRequest {
             bucket = bucketName
             key = id
         }
-        var originalName = ""
         var jsonString = ""
         s3Client.getObject(getObjectRequest) { getObjectResponse ->
-            originalName = getObjectResponse.metadata?.get("original-name") ?: ""
             jsonString = getObjectResponse.body?.decodeToString() ?: ""
         }
-        return JsonFile(jsonString, originalName)
+        return jsonString
     }
 
     suspend fun deleteFile(id: String) {

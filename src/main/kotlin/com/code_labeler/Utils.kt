@@ -29,20 +29,6 @@ class CodeWithLabel(val code: String) {
     }
 }
 
-class JsonFile(val originalName: String = "file") {
-    private var _jsonString = ""
-    val jsonString: String
-        get() = _jsonString
-
-    constructor(jsonString: String, originalName: String) : this(originalName) {
-        _jsonString = jsonString
-    }
-
-    fun changeString(string: String) {
-        _jsonString = string
-    }
-}
-
 @Serializable
 class NewLabel(val numberOfSnippet: Int, val label: Label)
 

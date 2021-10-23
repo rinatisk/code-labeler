@@ -13,6 +13,6 @@ fun main() {
             json()
         }
         configureRouting()
-        initDB()
+        DBFunctions.initDB()
     }.start(wait = true)
 }
