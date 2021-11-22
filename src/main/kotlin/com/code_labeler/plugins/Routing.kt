@@ -11,6 +11,12 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+import com.code_labeler.authentication.JwtConfig
+import com.code_labeler.entities.LoginBody
+import com.code_labeler.jwtConfig
+import com.code_labeler.repository.InMemoryUserRepository
+import com.code_labeler.repository.UserRepository
+import io.ktor.auth.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionScope
 import java.io.File
@@ -82,6 +88,32 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.OK, "OK")
             } else {
                 call.respond(HttpStatusCode.NotFound, "Such file does not exist")
+            }
+        }
+
+        val userRepository: UserRepository = InMemoryUserRepository()
+
+        post("/login") {
+            val loginBody = call.receive<LoginBody>()
+
+            val user = userRepository.getUser(loginBody.username, loginBody.password)
+
+            if (user == null) {
+                call.respond(HttpStatusCode.Unauthorized, "Invalid credentials!")
+                return@post
+            }
+
+            val token = jwtConfig.generateToken(JwtConfig.JwtUser(user.userId, user.username))
+            call.respond(token)
+        }
+
+        /**
+         * methods in this field will be only executed if user is authorized
+         */
+        authenticate {
+            get("/me") {
+                val user = call.authentication.principal as JwtConfig.JwtUser
+                call.respond(user)
             }
         }
     }
