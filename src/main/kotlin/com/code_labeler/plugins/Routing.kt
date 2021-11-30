@@ -12,13 +12,10 @@ import io.ktor.routing.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import com.code_labeler.authentication.JwtConfig
-import com.code_labeler.entities.LoginBody
+import com.code_labeler.authentication.LoginBody
+import com.code_labeler.authentication.UserDB
 import com.code_labeler.jwtConfig
-import com.code_labeler.repository.InMemoryUserRepository
-import com.code_labeler.repository.UserRepository
 import io.ktor.auth.*
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.transactions.transactionScope
 import java.io.File
 import java.util.*
 
@@ -91,19 +88,17 @@ fun Application.configureRouting() {
             }
         }
 
-        val userRepository: UserRepository = InMemoryUserRepository()
-
         post("/login") {
             val loginBody = call.receive<LoginBody>()
 
-            val user = userRepository.getUser(loginBody.username, loginBody.password)
+            val user = UserDB.findUser(loginBody)
 
             if (user == null) {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid credentials!")
                 return@post
             }
 
-            val token = jwtConfig.generateToken(JwtConfig.JwtUser(user.userId, user.username))
+            val token = jwtConfig.generateToken(JwtConfig.JwtUser(user.id.value, user.username))
             call.respond(token)
         }
 
