@@ -16,7 +16,7 @@ object CloudStorage {
         region = "eu-central-1"
         credentialsProvider = StaticCredentialsProvider(awsCreds)
     }
-    private val bucketName = "code-labeler-bucket"
+    private const val bucketName = "code-labeler-bucket"
 
     suspend fun uploadJson(id: String, jsonString: String) {
         val byteStreamOfFile = ByteStream.fromBytes(jsonString.toByteArray())

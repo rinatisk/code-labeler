@@ -11,20 +11,23 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
+const val STANDARD_LENGTH = 20
+const val ID_LENGTH = 40
+
 object Users : Table() {
     val id = integer("user_id").autoIncrement()
-    val name = varchar("name", 20)
-    val encryptedPassword = varchar("encrypted_password", 20)
-    val token = varchar("token", 20).nullable()
+    val name = varchar("name", STANDARD_LENGTH)
+    val encryptedPassword = varchar("encrypted_password", STANDARD_LENGTH)
+    val token = varchar("token", STANDARD_LENGTH).nullable()
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)
 }
 
 object Files : Table() {
-    val id = varchar("id", 40)
-    val name = varchar("name", 20)
-    val allowedUsers = varchar("allowed-users", 20).nullable()
+    val id = varchar("id", ID_LENGTH)
+    val name = varchar("name", STANDARD_LENGTH)
+    val allowedUsers = varchar("allowed-users", STANDARD_LENGTH).nullable()
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)
