@@ -2,8 +2,9 @@
 
 package com.code_labeler.plugins
 
+import com.code_labeler.*
 import com.code_labeler.authentication.JwtConfig
-import com.code_labeler.entities.LoginBody
+import com.code_labeler.authentication.LoginBody
 import com.code_labeler.jwtConfig
 import com.code_labeler.repository.InMemoryUserRepository
 import com.code_labeler.repository.UserRepository
@@ -12,16 +13,11 @@ import io.ktor.http.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.response.*
-import com.code_labeler.*
 import io.ktor.http.content.*
 import io.ktor.request.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
-import com.code_labeler.authentication.JwtConfig
-import com.code_labeler.authentication.LoginBody
 import com.code_labeler.authentication.UserDB
-import com.code_labeler.jwtConfig
-import io.ktor.auth.*
 import java.io.File
 import java.util.*
 

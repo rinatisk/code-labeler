@@ -16,8 +16,8 @@ const val STANDARD_LENGTH = 20
 const val ID_LENGTH = 40
 
 object Users : LongIdTable() {
-    val name = varchar("name", 20)
-    val encryptedPassword = varchar("encrypted_password", 20)
+    val name = varchar("name", STANDARD_LENGTH)
+    val encryptedPassword = varchar("encrypted_password", STANDARD_LENGTH)
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)
