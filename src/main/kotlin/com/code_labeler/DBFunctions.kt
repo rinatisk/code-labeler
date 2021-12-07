@@ -3,6 +3,7 @@
 package com.code_labeler
 
 import com.code_labeler.Files.name
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
@@ -14,11 +15,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 const val STANDARD_LENGTH = 20
 const val ID_LENGTH = 40
 
-object Users : Table() {
-    val id = integer("user_id").autoIncrement()
+object Users : LongIdTable() {
     val name = varchar("name", STANDARD_LENGTH)
     val encryptedPassword = varchar("encrypted_password", STANDARD_LENGTH)
-    val token = varchar("token", STANDARD_LENGTH).nullable()
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)

@@ -2,8 +2,9 @@
 
 package com.code_labeler.plugins
 
+import com.code_labeler.*
 import com.code_labeler.authentication.JwtConfig
-import com.code_labeler.entities.LoginBody
+import com.code_labeler.authentication.LoginBody
 import com.code_labeler.jwtConfig
 import com.code_labeler.repository.InMemoryUserRepository
 import com.code_labeler.repository.UserRepository
@@ -12,11 +13,11 @@ import io.ktor.http.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.response.*
-import com.code_labeler.*
 import io.ktor.http.content.*
 import io.ktor.request.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+import com.code_labeler.authentication.UserDB
 import java.io.File
 import java.util.*
 
@@ -108,6 +109,30 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.OK, "OK")
             } else {
                 call.respond(HttpStatusCode.NotFound, "Such file does not exist")
+            }
+        }
+
+        post("/login") {
+            val loginBody = call.receive<LoginBody>()
+
+            val user = UserDB.findUser(loginBody)
+
+            if (user == null) {
+                call.respond(HttpStatusCode.Unauthorized, "Invalid credentials!")
+                return@post
+            }
+
+            val token = jwtConfig.generateToken(JwtConfig.JwtUser(user.id.value, user.username))
+            call.respond(token)
+        }
+
+        /**
+         * methods in this field will be only executed if user is authorized
+         */
+        authenticate {
+            get("/me") {
+                val user = call.authentication.principal as JwtConfig.JwtUser
+                call.respond(user)
             }
         }
     }

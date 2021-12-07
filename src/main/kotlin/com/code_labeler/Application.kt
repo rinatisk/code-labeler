@@ -9,9 +9,6 @@ import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.ktor.features.*
 import io.ktor.gson.*
-import io.ktor.features.*
-import io.ktor.serialization.*
-import io.ktor.features.*
 import io.ktor.serialization.*
 
 val jwtConfig = JwtConfig(System.getenv("JWT_SECRET"))

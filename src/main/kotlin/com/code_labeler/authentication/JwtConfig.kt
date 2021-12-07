@@ -41,7 +41,8 @@ class JwtConfig(jwtSecret: String) {
         verifier(jwtVerifier)
         realm = jwtRealm
         validate {
-            val userId = it.payload.getClaim(CLAIM_USERID).asInt()
+            val userId = it.payload.getClaim(CLAIM_USERID).asLong()
+
             val userName = it.payload.getClaim(CLAIM_USERNAME).asString()
 
             if (userId != null && userName != null) {
@@ -55,7 +56,6 @@ class JwtConfig(jwtSecret: String) {
     /**
      * POKO, that contains information of an authenticated user that is authenticated via jwt
      */
-    data class JwtUser(val userId: Int, val userName: String): Principal
-
+    data class JwtUser(val userId: Long, val userName: String): Principal
 
 }
