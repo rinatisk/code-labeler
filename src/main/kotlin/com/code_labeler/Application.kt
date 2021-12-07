@@ -9,12 +9,17 @@ import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.ktor.features.*
 import io.ktor.gson.*
+import io.ktor.features.*
+import io.ktor.serialization.*
+import io.ktor.features.*
+import io.ktor.serialization.*
 
 val jwtConfig = JwtConfig(System.getenv("JWT_SECRET"))
 
 fun main() {
     embeddedServer(Tomcat, port = 8080, host = "0.0.0.0") {
         install(ContentNegotiation) {
+            json()
             gson {
                 setPrettyPrinting()
             }
@@ -25,5 +30,6 @@ fun main() {
             }
         }
         configureRouting()
+        DBFunctions.initDB()
     }.start(wait = true)
 }
