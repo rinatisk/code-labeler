@@ -2,13 +2,19 @@
 
 package com.code_labeler.plugins
 
-import com.code_labeler.*
-import io.ktor.application.*
+import com.code_labeler.authentication.JwtConfig
+import com.code_labeler.entities.LoginBody
+import com.code_labeler.jwtConfig
+import com.code_labeler.repository.InMemoryUserRepository
+import com.code_labeler.repository.UserRepository
+import io.ktor.routing.*
 import io.ktor.http.*
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.response.*
+import com.code_labeler.*
 import io.ktor.http.content.*
 import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import com.code_labeler.authentication.JwtConfig
@@ -21,15 +27,11 @@ import java.util.*
 
 fun Application.configureRouting() {
     routing {
-        var fileDescription = ""
         var uuid = ""
         post("/upload") {
             val multipartData = call.receiveMultipart()
             multipartData.forEachPart { part ->
                 when (part) {
-                    is PartData.FormItem -> {
-                        fileDescription = part.value
-                    }
                     is PartData.FileItem -> {
                         val string = Json.encodeToString(parseCsvString(String(part.streamProvider().readBytes())))
                         uuid = UUID.randomUUID().toString()
@@ -61,6 +63,32 @@ fun Application.configureRouting() {
                 temporaryFile.delete()
             } else {
                 call.respond(HttpStatusCode.NotFound, "Such file does not exist")
+            }
+        }
+
+        val userRepository: UserRepository = InMemoryUserRepository()
+
+        post("/login") {
+            val loginBody = call.receive<LoginBody>()
+
+            val user = userRepository.getUser(loginBody.username, loginBody.password)
+
+            if (user == null) {
+                call.respond(HttpStatusCode.Unauthorized, "Invalid credentials!")
+                return@post
+            }
+
+            val token = jwtConfig.generateToken(JwtConfig.JwtUser(user.userId, user.username))
+            call.respond(token)
+        }
+
+        /**
+         * methods in this field will be only executed if user is authorized
+         */
+        authenticate {
+            get("/me") {
+                val user = call.authentication.principal as JwtConfig.JwtUser
+                call.respond(user)
             }
         }
 

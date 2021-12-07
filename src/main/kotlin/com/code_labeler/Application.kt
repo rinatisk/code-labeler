@@ -5,11 +5,19 @@ import io.ktor.server.engine.*
 import io.ktor.server.tomcat.*
 import com.code_labeler.plugins.*
 import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.auth.jwt.*
+import io.ktor.features.*
+import io.ktor.gson.*
+import io.ktor.features.*
+import io.ktor.serialization.*
 import io.ktor.features.*
 import io.ktor.serialization.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.ktor.gson.*
+
+val jwtConfig = JwtConfig(System.getenv("JWT_SECRET"))
 
 val jwtConfig = JwtConfig(System.getenv("JWT_SECRET"))
 
