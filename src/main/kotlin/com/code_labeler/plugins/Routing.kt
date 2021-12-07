@@ -13,28 +13,20 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.response.*
 import com.code_labeler.*
-import io.ktor.application.*
 import io.ktor.http.content.*
 import io.ktor.request.*
-import io.ktor.response.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.transactions.transactionScope
 import java.io.File
 import java.util.*
 
 fun Application.configureRouting() {
     routing {
-        var fileDescription = ""
         var uuid = ""
         post("/upload") {
             val multipartData = call.receiveMultipart()
             multipartData.forEachPart { part ->
                 when (part) {
-                    is PartData.FormItem -> {
-                        fileDescription = part.value
-                    }
                     is PartData.FileItem -> {
                         val string = Json.encodeToString(parseCsvString(String(part.streamProvider().readBytes())))
                         uuid = UUID.randomUUID().toString()
@@ -94,7 +86,6 @@ fun Application.configureRouting() {
                 call.respond(user)
             }
         }
-    }
 
         delete("files/{id}") {
             val id = call.parameters["id"] ?: ""
