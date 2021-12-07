@@ -6,11 +6,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-
 internal class UtilsKtTest {
     @Test
     fun marshalTest1(@TempDir tempDir: Path) {
-        val tempResource = tempDir.resolve("tempOut.csv").toFile()
+        val tempResource = tempDir.resolve("temp_out.csv").toFile()
         val list = listOf(CodeWithLabel("ada", Label("daad")), CodeWithLabel("d", Label("dd")))
         marshalCsvFile(list, tempResource)
         val expectedFile = this.javaClass.getResource("marshalTest/expectedFile1.csv")
@@ -27,7 +26,6 @@ internal class UtilsKtTest {
         marshalCsvFile(list, tempResource)
         val expectedFile = this.javaClass.getResource("marshalTest/expectedFile2.csv")
         assertEquals(expectedFile.readText().replace("\r", ""), tempResource.readText().replace("\r", ""))
-
     }
 
     @Test
