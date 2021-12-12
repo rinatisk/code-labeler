@@ -38,8 +38,8 @@ object DBFunctions {
         Database.connect(
             "jdbc:postgresql://localhost:5432/postgres",
             driver = "org.postgresql.Driver",
-            user = "postgres",
-            password = ""
+            user = "rinat",
+            password = "2002"
         )
         transaction {
             SchemaUtils.create(Users)

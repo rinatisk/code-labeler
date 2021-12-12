@@ -1,6 +1,5 @@
 package com.code_labeler
 
-import java.io.File
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
