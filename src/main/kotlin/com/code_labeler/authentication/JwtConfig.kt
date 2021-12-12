@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
+import kotlinx.serialization.Serializable
 
 class JwtConfig(jwtSecret: String) {
 
@@ -56,6 +57,6 @@ class JwtConfig(jwtSecret: String) {
     /**
      * POKO, that contains information of an authenticated user that is authenticated via jwt
      */
+    @Serializable
     data class JwtUser(val userId: Long, val userName: String): Principal
-
 }

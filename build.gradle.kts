@@ -42,7 +42,8 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.mindrot:jbcrypt:0.4")
     api("aws.sdk.kotlin:s3:0.4.0-alpha")
 }
 
@@ -57,7 +58,7 @@ tasks.test {
 
     testLogging {
         events(
-           TestLogEvent.STANDARD_ERROR,
+            TestLogEvent.STANDARD_ERROR,
             TestLogEvent.STARTED,
             TestLogEvent.PASSED,
             TestLogEvent.FAILED,
