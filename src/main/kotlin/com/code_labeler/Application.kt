@@ -27,6 +27,5 @@ fun main() {
             }
         }
         configureRouting()
-        DBFunctions.initDB()
     }.start(wait = true)
 }

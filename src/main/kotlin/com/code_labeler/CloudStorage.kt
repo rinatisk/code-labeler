@@ -18,19 +18,28 @@ object CloudStorage {
     }
     private const val bucketName = "code-labeler-bucket"
 
-    suspend fun uploadJson(id: String, jsonString: String) {
+    /**
+     * Uploads a serialized file to cloud
+     * @param uuid unique id of file, used as a key
+     * @param jsonString serialized file
+     */
+    suspend fun uploadJson(uuid: String, jsonString: String) {
         val byteStreamOfFile = ByteStream.fromBytes(jsonString.toByteArray())
         s3Client.putObject {
             bucket = bucketName
-            key = id
+            key = uuid
             body = byteStreamOfFile
         }
     }
 
-    suspend fun downloadJson(id: String): String {
+    /**
+     * Downloads serialized file and return
+     * @param uuid unique id of file, used as a key
+     */
+    suspend fun downloadJson(uuid: String): String {
         val getObjectRequest = GetObjectRequest {
             bucket = bucketName
-            key = id
+            key = uuid
         }
         var jsonString = ""
         s3Client.getObject(getObjectRequest) { getObjectResponse ->
@@ -39,10 +48,14 @@ object CloudStorage {
         return jsonString
     }
 
-    suspend fun deleteFile(id: String) {
+    /**
+     * Removes a file from the cloud
+     * @param uuid unique id of file, used as a key
+     */
+    suspend fun deleteFile(uuid: String) {
         s3Client.deleteObject {
             bucket = bucketName
-            key = id
+            key = uuid
         }
     }
 }
