@@ -3,8 +3,8 @@
 package com.code_labeler.plugins
 
 import com.code_labeler.*
-import com.code_labeler.DBFunctions.isNewUser
-import com.code_labeler.DBFunctions.isOwner
+import com.code_labeler.DB.isNewUser
+import com.code_labeler.DB.isOwner
 import com.code_labeler.authentication.JwtConfig
 import com.code_labeler.authentication.LoginBody
 import com.code_labeler.jwtConfig
@@ -29,7 +29,7 @@ fun Route.signup() {
     post("/signup") {
         val loginBody = call.receive<LoginBody>()
         if (isNewUser(loginBody.username)) {
-            DBFunctions.addUser(loginBody.username, encrypt(loginBody.password))
+            DB.addUser(loginBody.username, encrypt(loginBody.password))
             call.respond(HttpStatusCode.OK, "User registered successfully")
         } else {
             call.respond(HttpStatusCode.Conflict, "User already exists")
@@ -48,7 +48,7 @@ fun Route.login() {
             call.respond(HttpStatusCode.Unauthorized, "Invalid credentials!")
             return@post
         }
-        val token = jwtConfig.generateToken(JwtConfig.JwtUser(user.id.value, user.username))
+        val token = jwtConfig.generateToken(JwtConfig.User(user.id.value, user.username))
         call.respond(token)
     }
 }
@@ -60,14 +60,14 @@ fun Route.fileUpload() {
          * Uploads a file to the server, gets the file itself and the owner token
          */
         post("/upload") {
-            val user = call.authentication.principal as JwtConfig.JwtUser
+            val user = call.authentication.principal as JwtConfig.User
             val multipartData = call.receiveMultipart()
             multipartData.forEachPart { part ->
                 when (part) {
                     is PartData.FileItem -> {
                         val string = Json.encodeToString(parseCsvString(String(part.streamProvider().readBytes())))
                         uuid = UUID.randomUUID().toString()
-                        DBFunctions.addFile(uuid, part.originalFileName ?: "file.csv", user.userId)
+                        DB.addFile(uuid, part.originalFileName ?: "file.csv", user.userId)
                         CloudStorage.uploadJson(uuid, string)
                     }
                 }
@@ -83,11 +83,11 @@ fun Route.fileDownload() {
          * Sends a file to the user, gets the uuid of a file and the token of the user who has access to this file
          */
         get("/files/{id}") {
-            val user = call.authentication.principal as JwtConfig.JwtUser
+            val user = call.authentication.principal as JwtConfig.User
             val fileUuid = call.parameters["id"] ?: ""
-            if (DBFunctions.exists(fileUuid)) {
-                if (DBFunctions.isUserAllowed(user.userId, fileUuid)) {
-                    val originalName = DBFunctions.getOriginalName(fileUuid)
+            if (DB.exists(fileUuid)) {
+                if (DB.isUserAllowed(user.userId, fileUuid)) {
+                    val originalName = DB.getOriginalName(fileUuid)
                     val jsonString = CloudStorage.downloadJson(fileUuid)
                     val temporaryFile = File(originalName)
                     val listOfSnippets: List<CodeWithLabel> = Json.decodeFromString(jsonString)
@@ -120,11 +120,11 @@ fun Route.addUser() {
          */
         put("files/{id}/add") {
             val userToAdd = call.receive<String>()
-            val owner = call.authentication.principal as JwtConfig.JwtUser
+            val owner = call.authentication.principal as JwtConfig.User
             val fileUuid = call.parameters["id"] ?: ""
-            if (DBFunctions.exists(fileUuid)) {
+            if (DB.exists(fileUuid)) {
                 if (isOwner(fileUuid, owner.userId)) {
-                    DBFunctions.allowUser(fileUuid, DBFunctions.getId(userToAdd))
+                    DB.allowUser(fileUuid, DB.getId(userToAdd))
                     call.respond(HttpStatusCode.OK, "User added successfully")
                 } else {
                     call.respond(HttpStatusCode.Forbidden, "User doesn't have access to this file")
@@ -145,11 +145,11 @@ fun Route.removeUser() {
          */
         put("files/{id}/remove") {
             val userToRemove = call.receive<String>()
-            val owner = call.authentication.principal as JwtConfig.JwtUser
+            val owner = call.authentication.principal as JwtConfig.User
             val fileUuid = call.parameters["id"] ?: ""
-            if (DBFunctions.exists(fileUuid)) {
+            if (DB.exists(fileUuid)) {
                 if (isOwner(fileUuid, owner.userId)) {
-                    DBFunctions.denyUser(fileUuid, DBFunctions.getId(userToRemove))
+                    DB.denyUser(fileUuid, DB.getId(userToRemove))
                     call.respond(HttpStatusCode.OK, "User removed successfully")
                 } else {
                     call.respond(HttpStatusCode.Forbidden, "User doesn't have access to this file")
@@ -167,12 +167,12 @@ fun Route.deleteFile() {
          * Deletes the file, for this it gets the uuid of the file and the token of the owner
          */
         delete("files/{id}") {
-            val user = call.authentication.principal as JwtConfig.JwtUser
+            val user = call.authentication.principal as JwtConfig.User
             val id = call.parameters["id"] ?: ""
-            if (DBFunctions.exists(id)) {
+            if (DB.exists(id)) {
                 if (isOwner(id, user.userId)) {
                     CloudStorage.deleteFile(id)
-                    DBFunctions.removeFile(id)
+                    DB.removeFile(id)
                     call.respond(HttpStatusCode.OK, "OK")
                 } else {
                     call.respond(HttpStatusCode.Forbidden, "User doesn't have access to this file")
@@ -191,11 +191,11 @@ fun Route.modifyFile() {
          * the token of the user with access to the file and json with changes
          */
         put("files/{id}") {
-            val user = call.authentication.principal as JwtConfig.JwtUser
+            val user = call.authentication.principal as JwtConfig.User
             val id = call.parameters["id"] ?: ""
             val newLabel = call.receive<NewLabel>()
-            if (DBFunctions.exists(id)) {
-                if (DBFunctions.isUserAllowed(user.userId, id)) {
+            if (DB.exists(id)) {
+                if (DB.isUserAllowed(user.userId, id)) {
                     val jsonString = CloudStorage.downloadJson(id)
                     CloudStorage.uploadJson(id, changeLabel(jsonString, newLabel))
                     call.respond(HttpStatusCode.OK, "OK")

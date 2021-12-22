@@ -29,7 +29,7 @@ class JwtConfig(jwtSecret: String) {
     /**
      * Generate a token for a authenticated user
      */
-    fun generateToken(user: JwtUser): String = JWT.create()
+    fun generateToken(user: User): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(jwtIssuer)
         .withClaim(CLAIM_USERID, user.userId)
@@ -48,7 +48,7 @@ class JwtConfig(jwtSecret: String) {
             val userName = it.payload.getClaim(CLAIM_USERNAME).asString()
 
             if (userId != null && userName != null) {
-                JwtUser(userId, userName)
+                User(userId, userName)
             } else {
                 null
             }
@@ -59,5 +59,5 @@ class JwtConfig(jwtSecret: String) {
      * POKO, that contains information of an authenticated user that is authenticated via jwt
      */
     @Serializable
-    data class JwtUser(val userId: Long, val userName: String): Principal
+    data class User(val userId: Long, val userName: String): Principal
 }

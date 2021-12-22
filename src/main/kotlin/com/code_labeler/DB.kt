@@ -15,6 +15,10 @@ import java.util.*
 
 const val STANDARD_LENGTH = 100
 
+/**
+ * @property name - username
+ * @property encryptedPassword - password hashed with BCrypt
+ */
 object Users : LongIdTable() {
     val name = varchar("name", STANDARD_LENGTH)
     val encryptedPassword = varchar("encrypted_password", STANDARD_LENGTH)
@@ -23,6 +27,12 @@ object Users : LongIdTable() {
         get() = PrimaryKey(name)
 }
 
+/**
+ * @property id - uuid of the file
+ * @property name - original name of the file
+ * @property owner - id of the user who can delete the file, give or take away access from other users
+ * @property users - list of users who can modify the file
+ */
 object Files : Table() {
     val id = varchar("id", STANDARD_LENGTH)
     val name = varchar("name", STANDARD_LENGTH)
@@ -33,10 +43,10 @@ object Files : Table() {
         get() = PrimaryKey(id)
 }
 
-object DBFunctions {
+object DB {
     init {
         val postgresProperties = Properties()
-        postgresProperties.load(DBFunctions::class.java.classLoader.getResourceAsStream("postgres.properties"))
+        postgresProperties.load(DB::class.java.classLoader.getResourceAsStream("postgres.properties"))
         Database.connect(
             url = postgresProperties.getProperty("url"),
             driver = postgresProperties.getProperty("driver"),
@@ -48,6 +58,13 @@ object DBFunctions {
             SchemaUtils.create(Files)
         }
     }
+
+    private fun getUsers(uuid: String): List<Long> {
+        val users = transaction { Files.select { Files.id eq uuid }.first()[users] }
+        return Json.decodeFromString<List<Long>>(users ?: return emptyList())
+    }
+
+    private fun getOwner(uuid: String) = transaction { Files.select { Files.id eq uuid }.first()[owner] }
 
     fun isNewUser(username: String) = !transaction { Users.select { Users.name eq username }.count() > 0 }
 
@@ -69,13 +86,6 @@ object DBFunctions {
             }
         }
     }
-
-    fun getUsers(uuid: String): List<Long> {
-        val users = transaction { Files.select { Files.id eq uuid }.first()[users] }
-        return Json.decodeFromString<List<Long>>(users ?: return emptyList())
-    }
-
-    fun getOwner(uuid: String) = transaction { Files.select { Files.id eq uuid }.first()[owner] }
 
     fun isOwner(uuid: String, idOfUser: Long) = getOwner(uuid) == idOfUser
 
