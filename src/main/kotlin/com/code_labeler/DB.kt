@@ -96,11 +96,11 @@ object DB {
     fun allowUser(fileUuid: String, userId: Long) {
         val users = getUsers(fileUuid)
         if (userId !in users) {
-            val newUsers = users.toMutableList()
-            newUsers.add(userId)
+            val allowedUsers = users.toMutableList()
+            allowedUsers.add(userId)
             transaction {
                 Files.update({ Files.id eq fileUuid }) {
-                    it[Files.users] = Json.encodeToString(newUsers.toList())
+                    it[Files.users] = Json.encodeToString(allowedUsers.toList())
                 }
             }
         }
@@ -108,12 +108,12 @@ object DB {
 
     fun denyUser(fileUuid: String, userId: Long) {
         val users = getUsers(fileUuid)
-        if (userId !in users) {
-            val newUsers = users.toMutableList()
-            newUsers.remove(userId)
+        if (userId in users) {
+            val allowedUsers = users.toMutableList()
+            allowedUsers.remove(userId)
             transaction {
                 Files.update({ Files.id eq fileUuid }) {
-                    it[Files.users] = Json.encodeToString(newUsers.toList())
+                    it[Files.users] = Json.encodeToString(allowedUsers.toList())
                 }
             }
         }
