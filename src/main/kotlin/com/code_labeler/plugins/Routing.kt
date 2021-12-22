@@ -1,5 +1,3 @@
-@file:Suppress("SwallowedException")
-
 package com.code_labeler.plugins
 
 import com.code_labeler.*
@@ -68,7 +66,7 @@ fun Route.fileUpload() {
                         val string = Json.encodeToString(parseCsvString(String(part.streamProvider().readBytes())))
                         uuid = UUID.randomUUID().toString()
                         DB.addFile(uuid, part.originalFileName ?: "file.csv", user.userId)
-                        CloudStorage.uploadJson(uuid, string)
+                        CloudStorage().uploadJson(uuid, string)
                     }
                 }
             }
@@ -88,7 +86,7 @@ fun Route.fileDownload() {
             if (DB.exists(fileUuid)) {
                 if (DB.isUserAllowed(user.userId, fileUuid)) {
                     val originalName = DB.getOriginalName(fileUuid)
-                    val jsonString = CloudStorage.downloadJson(fileUuid)
+                    val jsonString = CloudStorage().downloadJson(fileUuid)
                     val temporaryFile = File(originalName)
                     val listOfSnippets: List<CodeWithLabel> = Json.decodeFromString(jsonString)
                     marshalCsvFile(listOfSnippets, temporaryFile)
@@ -171,7 +169,7 @@ fun Route.deleteFile() {
             val id = call.parameters["id"] ?: ""
             if (DB.exists(id)) {
                 if (isOwner(id, user.userId)) {
-                    CloudStorage.deleteFile(id)
+                    CloudStorage().deleteFile(id)
                     DB.removeFile(id)
                     call.respond(HttpStatusCode.OK, "OK")
                 } else {
@@ -196,8 +194,9 @@ fun Route.modifyFile() {
             val newLabel = call.receive<NewLabel>()
             if (DB.exists(id)) {
                 if (DB.isUserAllowed(user.userId, id)) {
-                    val jsonString = CloudStorage.downloadJson(id)
-                    CloudStorage.uploadJson(id, changeLabel(jsonString, newLabel))
+                    val storage = CloudStorage()
+                    val jsonString = storage.downloadJson(id)
+                    storage.uploadJson(id, changeLabel(jsonString, newLabel))
                     call.respond(HttpStatusCode.OK, "OK")
                 } else {
                     call.respond(HttpStatusCode.Forbidden, "User doesn't have access to this file")

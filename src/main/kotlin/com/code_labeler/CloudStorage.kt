@@ -6,7 +6,7 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.decodeToString
 import kotlinx.coroutines.runBlocking
 
-object CloudStorage {
+class CloudStorage {
     private var s3Client: S3Client
 
     init {
@@ -16,8 +16,6 @@ object CloudStorage {
             }
         }
     }
-
-    private const val bucketName = "code-labeler-bucket"
 
     /**
      * Uploads a serialized file to cloud
@@ -58,5 +56,9 @@ object CloudStorage {
             bucket = bucketName
             key = uuid
         }
+    }
+
+    companion object {
+        private const val bucketName = "code-labeler-bucket"
     }
 }
