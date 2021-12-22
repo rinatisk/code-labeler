@@ -11,6 +11,7 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlinx.serialization.encodeToString
 import org.jetbrains.exposed.sql.*
+import java.util.*
 
 const val STANDARD_LENGTH = 100
 
@@ -34,10 +35,12 @@ object Files : Table() {
 
 object DBFunctions {
     init {
+        val postgresProperties = Properties()
+        postgresProperties.load(DBFunctions::class.java.classLoader.getResourceAsStream("postgres.properties"))
         Database.connect(
-            "jdbc:postgresql://localhost:5432/postgres",
-            driver = "org.postgresql.Driver",
-            user = "postgres",
+            url = postgresProperties.getProperty("url"),
+            driver = postgresProperties.getProperty("driver"),
+            user = postgresProperties.getProperty("user"),
             password = System.getenv("POSTGRES_PASSWORD")
         )
         transaction {

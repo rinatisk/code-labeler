@@ -44,7 +44,7 @@ dependencies {
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation("org.mindrot:jbcrypt:0.4")
-    api("aws.sdk.kotlin:s3:0.4.0-alpha")
+    implementation("aws.sdk.kotlin:s3:0.9.4-beta")
 }
 
 detekt {

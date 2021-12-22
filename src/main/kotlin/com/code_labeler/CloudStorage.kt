@@ -1,21 +1,22 @@
 package com.code_labeler
 
-import aws.sdk.kotlin.runtime.auth.Credentials
-import aws.sdk.kotlin.runtime.auth.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.decodeToString
+import kotlinx.coroutines.runBlocking
 
 object CloudStorage {
-    private val awsCreds = Credentials(
-        "",
-        ""
-    )
-    private val s3Client = S3Client {
-        region = "eu-central-1"
-        credentialsProvider = StaticCredentialsProvider(awsCreds)
+    private var s3Client: S3Client
+
+    init {
+        runBlocking {
+            s3Client = S3Client.fromEnvironment() {
+                region = "eu-central-1"
+            }
+        }
     }
+
     private const val bucketName = "code-labeler-bucket"
 
     /**

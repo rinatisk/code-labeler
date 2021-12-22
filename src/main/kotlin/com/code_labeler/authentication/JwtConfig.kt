@@ -3,22 +3,23 @@ package com.code_labeler.authentication
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.typesafe.config.ConfigFactory
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
+import io.ktor.config.*
 import kotlinx.serialization.Serializable
 
 class JwtConfig(jwtSecret: String) {
 
     companion object Constants {
-        // jwt config
-        private const val jwtIssuer = "donothing.club"
-        private const val jwtRealm = "donothing.club.codelabeler"
-
         // claims
         private const val CLAIM_USERID = "userId"
         private const val CLAIM_USERNAME = "userName"
     }
 
+    private val config = HoconApplicationConfig(ConfigFactory.load())
+    private val jwtIssuer = config.property("jwt.issuer").getString()
+    private val jwtRealm = config.property("jwt.realm").getString()
     private val jwtAlgorithm = Algorithm.HMAC512(jwtSecret)
     private val jwtVerifier: JWTVerifier = JWT
         .require(jwtAlgorithm)
