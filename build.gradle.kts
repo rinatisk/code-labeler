@@ -45,6 +45,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation("org.mindrot:jbcrypt:0.4")
     implementation("aws.sdk.kotlin:s3:0.9.4-beta")
+    implementation("com.zaxxer:HikariCP:4.0.3")
 }
 
 detekt {
@@ -65,4 +66,8 @@ tasks.test {
             TestLogEvent.SKIPPED
         )
     }
+}
+
+tasks.create("stage") {
+    dependsOn("installDist")
 }

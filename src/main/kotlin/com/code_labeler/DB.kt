@@ -5,12 +5,15 @@ package com.code_labeler
 import com.code_labeler.Files.name
 import com.code_labeler.Files.owner
 import com.code_labeler.Files.users
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlinx.serialization.encodeToString
 import org.jetbrains.exposed.sql.*
+import java.net.URI
 import java.util.*
 
 const val STANDARD_LENGTH = 100
@@ -45,13 +48,8 @@ object Files : Table() {
 
 object DB {
     init {
-        val postgresProperties = Properties()
-        postgresProperties.load(DB::class.java.classLoader.getResourceAsStream("postgres.properties"))
         Database.connect(
-            url = postgresProperties.getProperty("url"),
-            driver = postgresProperties.getProperty("driver"),
-            user = postgresProperties.getProperty("user"),
-            password = System.getenv("POSTGRES_PASSWORD")
+            dataSource()
         )
         transaction {
             SchemaUtils.create(Users)
@@ -59,9 +57,19 @@ object DB {
         }
     }
 
+    private fun dataSource(): HikariDataSource {
+        val config = HikariConfig()
+        val dbUri = URI(System.getenv("DATABASE_URL"))
+        val dbUserInfo = dbUri.userInfo
+        config.username = dbUserInfo.split(":")[0]
+        config.password = dbUserInfo.split(":")[1]
+        config.jdbcUrl = "jdbc:postgresql://${dbUri.host}:${dbUri.port}${dbUri.path}"
+        return HikariDataSource(config)
+    }
+
     private fun getUsers(uuid: String): List<Long> {
         val users = transaction { Files.select { Files.id eq uuid }.first()[users] }
-        return Json.decodeFromString<List<Long>>(users ?: return emptyList())
+        return Json.decodeFromString(users ?: return emptyList())
     }
 
     private fun getOwner(uuid: String) = transaction { Files.select { Files.id eq uuid }.first()[owner] }
