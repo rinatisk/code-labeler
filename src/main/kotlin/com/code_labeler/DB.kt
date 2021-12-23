@@ -58,7 +58,7 @@ object DB {
     private fun dataSource(): HikariDataSource {
         val config = HikariConfig()
         val dbUri = URI(System.getenv("DATABASE_URL") ?: "postgresql://localhost:5432/")
-        val dbUserInfo = dbUri.userInfo ?: null
+        val dbUserInfo = dbUri.userInfo
         if (dbUserInfo != null) {
             config.username = dbUserInfo.split(":")[0]
         }
