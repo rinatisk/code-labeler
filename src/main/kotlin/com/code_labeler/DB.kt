@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.code_labeler
 
 import com.code_labeler.Files.name

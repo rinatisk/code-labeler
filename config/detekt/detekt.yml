@@ -2,6 +2,11 @@ naming:
   PackageNaming:
     active: false
 
+
 style:
   WildcardImport:
+    active: false
+
+complexity:
+  TooManyFunctions:
     active: false
