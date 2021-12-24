@@ -20,17 +20,9 @@ class User(id: EntityID<Long>) : Entity<Long>(id) {
 
     val username by Users.name
     val password by Users.encryptedPassword
-
-    fun toUserBody() = UserBody(id.value, username)
 }
 
 object UserDB {
-    fun Long.par() = this % 2 == 0L
-
-    fun authGetUsers(token: JWTPrincipal): List<UserBody> = getUsers().filter {
-        if (token.payload.getClaim("id").asLong().par()) it.id.value.par() else !it.id.value.par()
-    }.map { it.toUserBody() }
-
     private fun getUsers(): List<User> = transaction { User.all().toList() }
 
     fun findUser(credential: LoginBody): User? =

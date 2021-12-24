@@ -1,19 +1,25 @@
-@file:Suppress("TooManyFunctions")
-
 package com.code_labeler
 
 import com.code_labeler.Files.name
 import com.code_labeler.Files.owner
 import com.code_labeler.Files.users
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlinx.serialization.encodeToString
 import org.jetbrains.exposed.sql.*
+import java.net.URI
+import java.util.*
 
 const val STANDARD_LENGTH = 100
 
+/**
+ * @property name - username
+ * @property encryptedPassword - password hashed with BCrypt
+ */
 object Users : LongIdTable() {
     val name = varchar("name", STANDARD_LENGTH)
     val encryptedPassword = varchar("encrypted_password", STANDARD_LENGTH)
@@ -22,6 +28,12 @@ object Users : LongIdTable() {
         get() = PrimaryKey(name)
 }
 
+/**
+ * @property id - uuid of the file
+ * @property name - original name of the file
+ * @property owner - id of the user who can delete the file, give or take away access from other users
+ * @property users - list of users who can modify the file
+ */
 object Files : Table() {
     val id = varchar("id", STANDARD_LENGTH)
     val name = varchar("name", STANDARD_LENGTH)
@@ -32,19 +44,37 @@ object Files : Table() {
         get() = PrimaryKey(id)
 }
 
-object DBFunctions {
+object DB {
     init {
         Database.connect(
-            "jdbc:postgresql://localhost:5432/postgres",
-            driver = "org.postgresql.Driver",
-            user = "postgres",
-            password = System.getenv("POSTGRES_PASSWORD")
+            dataSource()
         )
         transaction {
             SchemaUtils.create(Users)
             SchemaUtils.create(Files)
         }
     }
+
+    private fun dataSource(): HikariDataSource {
+        val config = HikariConfig()
+        val dbUri = URI(System.getenv("DATABASE_URL") ?: "postgresql://localhost:5432/")
+        val dbUserInfo = dbUri.userInfo
+        if (dbUserInfo != null) {
+            config.username = dbUserInfo.split(":")[0]
+        }
+        if (dbUserInfo != null) {
+            config.password = dbUserInfo.split(":")[1]
+        }
+        config.jdbcUrl = "jdbc:postgresql://${dbUri.host}:${dbUri.port}${dbUri.path}"
+        return HikariDataSource(config)
+    }
+
+    private fun getUsers(uuid: String): List<Long> {
+        val users = transaction { Files.select { Files.id eq uuid }.first()[users] }
+        return Json.decodeFromString(users ?: return emptyList())
+    }
+
+    private fun getOwner(uuid: String) = transaction { Files.select { Files.id eq uuid }.first()[owner] }
 
     fun isNewUser(username: String) = !transaction { Users.select { Users.name eq username }.count() > 0 }
 
@@ -67,13 +97,6 @@ object DBFunctions {
         }
     }
 
-    fun getUsers(uuid: String): List<Long> {
-        val users = transaction { Files.select { Files.id eq uuid }.first()[users] }
-        return Json.decodeFromString<List<Long>>(users ?: return emptyList())
-    }
-
-    fun getOwner(uuid: String) = transaction { Files.select { Files.id eq uuid }.first()[owner] }
-
     fun isOwner(uuid: String, idOfUser: Long) = getOwner(uuid) == idOfUser
 
     fun isUserAllowed(userId: Long, uuid: String): Boolean {
@@ -83,11 +106,11 @@ object DBFunctions {
     fun allowUser(fileUuid: String, userId: Long) {
         val users = getUsers(fileUuid)
         if (userId !in users) {
-            val newUsers = users.toMutableList()
-            newUsers.add(userId)
+            val allowedUsers = users.toMutableList()
+            allowedUsers.add(userId)
             transaction {
                 Files.update({ Files.id eq fileUuid }) {
-                    it[Files.users] = Json.encodeToString(newUsers.toList())
+                    it[Files.users] = Json.encodeToString(allowedUsers.toList())
                 }
             }
         }
@@ -95,12 +118,12 @@ object DBFunctions {
 
     fun denyUser(fileUuid: String, userId: Long) {
         val users = getUsers(fileUuid)
-        if (userId !in users) {
-            val newUsers = users.toMutableList()
-            newUsers.remove(userId)
+        if (userId in users) {
+            val allowedUsers = users.toMutableList()
+            allowedUsers.remove(userId)
             transaction {
                 Files.update({ Files.id eq fileUuid }) {
-                    it[Files.users] = Json.encodeToString(newUsers.toList())
+                    it[Files.users] = Json.encodeToString(allowedUsers.toList())
                 }
             }
         }
